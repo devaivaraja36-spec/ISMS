@@ -7,7 +7,7 @@ import UpcomingDeadlinesWidget from "../../components/widgets/UpcomingDeadlinesW
 import FocusTimerWidget from "../../components/widgets/FocusTimerWidget";
 import QuickNotesWidget from "../../components/widgets/QuickNotesWidget";
 import HabitTrackerWidget from "../../components/widgets/HabitTrackerWidget";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth, getUserDisplayName } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { User, Sparkles, CheckCircle2, Clock, FolderKanban, ArrowRight } from "lucide-react";
 import { studentApi } from "../../api/student";
@@ -46,7 +46,7 @@ function StudentDashboard() {
             </div>
             <div>
               <h1 className="text-lg font-bold text-white leading-tight">
-                Welcome, {user?.name || "Arun"} 👋
+                Welcome, {getUserDisplayName(user, "Arun")} 👋
               </h1>
               <p className="text-[11px] text-slate-400 font-medium">Student Portal • Active Session</p>
             </div>

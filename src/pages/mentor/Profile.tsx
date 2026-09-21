@@ -10,13 +10,13 @@ import {
 } from "lucide-react";
 
 import MentorSidebar from "../../components/layout/MentorSidebar";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth, getUserDisplayName } from "../../context/AuthContext";
 
 function Profile() {
   const { user, updateUser } = useAuth();
 
   const [profile, setProfile] = useState({
-    name: user?.name || "Dr. Priya Sharma",
+    name: getUserDisplayName(user, "Dr. Priya Sharma"),
     email: "priya.sharma@example.com",
     department: "Computer Science & Engineering",
     designation: "Internship Mentor",

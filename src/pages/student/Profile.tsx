@@ -11,14 +11,14 @@ import {
 } from "lucide-react";
 import Sidebar from "../../components/layout/Sidebar";
 import PasswordResetModal from "../../components/modals/PasswordResetModal";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth, getUserDisplayName } from "../../context/AuthContext";
 
 function Profile() {
   const { user, updateUser } = useAuth();
   const [isResetOpen, setIsResetOpen] = useState(false);
 
   const [profile, setProfile] = useState({
-    name: user?.name || "Arun Kumar",
+    name: getUserDisplayName(user, "Arun Kumar"),
     email: "arun@example.com",
     phone: "+91 98765 43210",
     college: "ABC College of Engineering",

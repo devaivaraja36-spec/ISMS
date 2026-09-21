@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 
 import { useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth, getUserDisplayName } from "../../context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
 
 interface MenuItem {
@@ -109,7 +109,7 @@ function Sidebar() {
 
           <div className="min-w-0 whitespace-nowrap max-w-0 opacity-0 group-hover:max-w-[150px] group-hover:opacity-100 transition-all duration-300 ease-in-out overflow-hidden">
             <p className="truncate text-sm font-semibold text-white">
-              {user?.name || "Student"}
+              {getUserDisplayName(user, "Student")}
             </p>
             <p className="text-xs capitalize text-slate-400">
               {user?.role || "student"}
