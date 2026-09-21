@@ -1,0 +1,8 @@
+{
+  "name": "isms-root",
+  "private": true,
+  "scripts": {
+    "dev": "npm run dev --prefix ISMS-main",
+    "build": "npm run build --prefix ISMS-main"
+  }
+}
