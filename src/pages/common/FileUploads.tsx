@@ -3,7 +3,7 @@ import { Upload, FileText, Download, Trash2, Eye, Filter, Search, CheckCircle2, 
 import Sidebar from "../../components/layout/Sidebar";
 import MentorSidebar from "../../components/layout/MentorSidebar";
 import AdminSidebar from "../../components/layout/AdminSidebar";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth, getUserDisplayName } from "../../context/AuthContext";
 
 export interface UploadedFile {
   id: string;
@@ -66,7 +66,8 @@ const DEFAULT_FILES: UploadedFile[] = [
 
 export const FileUploads: React.FC = () => {
   const { user } = useAuth();
-  const userRole = user?.role || "student";
+  const userRole = user?.role || "STUDENT";
+  const normalizedRole = userRole.toLowerCase();
 
   const [files, setFiles] = useState<UploadedFile[]>(DEFAULT_FILES);
   const [searchTerm, setSearchTerm] = useState("");
@@ -117,8 +118,8 @@ export const FileUploads: React.FC = () => {
       name: newFileName,
       size: "1.2 MB",
       category: newCategory,
-      uploadedBy: user?.name || "CurrentUser",
-      userRole: userRole as any,
+      uploadedBy: getUserDisplayName(user, "CurrentUser"),
+      userRole: normalizedRole as any,
       uploadDate: "Sep 20, 2026",
       status: "Pending Review",
       fileType: newFileName.endsWith(".zip") ? "zip" : newFileName.endsWith(".pdf") ? "pdf" : "docx",
@@ -143,9 +144,9 @@ export const FileUploads: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-950 text-white flex">
       {/* Role-based Sidebar */}
-      {userRole === "admin" && <AdminSidebar />}
-      {userRole === "mentor" && <MentorSidebar />}
-      {userRole === "student" && <Sidebar />}
+      {normalizedRole === "admin" && <AdminSidebar />}
+      {normalizedRole === "mentor" && <MentorSidebar />}
+      {normalizedRole === "student" && <Sidebar />}
 
       {/* Main Content */}
       <main className="ml-20 transition-all duration-300 flex-1 p-6 md:p-8">

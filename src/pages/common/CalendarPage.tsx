@@ -9,14 +9,15 @@ import { Calendar as CalendarIcon, Clock, CheckCircle2 } from "lucide-react";
 
 export const CalendarPage: React.FC = () => {
   const { user } = useAuth();
-  const userRole = user?.role || "student";
+  const userRole = user?.role || "STUDENT";
+  const normalizedRole = userRole.toLowerCase();
 
   return (
     <div className="min-h-screen bg-slate-950 text-white flex">
       {/* Role-based Sidebar */}
-      {userRole === "admin" && <AdminSidebar />}
-      {userRole === "mentor" && <MentorSidebar />}
-      {userRole === "student" && <Sidebar />}
+      {normalizedRole === "admin" && <AdminSidebar />}
+      {normalizedRole === "mentor" && <MentorSidebar />}
+      {normalizedRole === "student" && <Sidebar />}
 
       {/* Main Content */}
       <main className="ml-20 transition-all duration-300 flex-1 p-6 md:p-8">

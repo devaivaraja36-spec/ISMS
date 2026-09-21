@@ -1,16 +1,24 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { authApi } from '../api/auth';
 
-interface User {
+export interface User {
   id: number;
   email: string;
-  first_name: string;
-  last_name: string;
+  first_name?: string;
+  last_name?: string;
   role: 'STUDENT' | 'MENTOR' | 'ADMIN';
   phone?: string;
   student_id?: number;
   mentor_id?: number;
+  name?: string;
 }
+
+export const getUserDisplayName = (user?: User | null, fallback = 'User'): string => {
+  if (!user) return fallback;
+  if (user.name) return user.name;
+  const full = `${user.first_name || ''} ${user.last_name || ''}`.trim();
+  return full || fallback;
+};
 
 interface AuthContextType {
   user: User | null;
@@ -19,6 +27,7 @@ interface AuthContextType {
   login: (email: string, pass: string) => Promise<any>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  updateUser: (data: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
@@ -77,8 +86,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const updateUser = (data: Partial<User>) => {
+    setUser((prev) => {
+      if (!prev) return prev;
+      const updated = { ...prev, ...data };
+      localStorage.setItem('user', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, logout, refreshUser }}>
+    <AuthContext.Provider value={{ user, token, loading, login, logout, refreshUser, updateUser }}>
       {children}
     </AuthContext.Provider>
   );
