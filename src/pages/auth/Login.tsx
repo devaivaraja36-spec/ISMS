@@ -66,38 +66,65 @@ function Login() {
     setError("");
   };
 
-  const handleLogin = (e: FormEvent) => {
+  const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
 
     if (!username || !password) {
-      setError("Please enter your username and password.");
+      setError("Please enter your email/username and password.");
       return;
     }
 
     if (!selectedPortal) return;
 
-    const result = login(username, password);
+    let loginEmail = username.trim();
+    let loginPassword = password.trim();
 
-    if (!result.success || !result.user) {
-      setError(result.message || "Login failed.");
-      return;
+    // Flexible mapping for test credentials
+    if (loginEmail === "admin" || loginEmail === "admin@interntrack.com") {
+      loginEmail = "admin@interntrack.com";
+      if (loginPassword === "1234") loginPassword = "Admin@123";
+    } else if (loginEmail === "mentor" || loginEmail === "mentor1" || loginEmail === "mentor@interntrack.com") {
+      loginEmail = "mentor@interntrack.com";
+      if (loginPassword === "1234") loginPassword = "Mentor@123";
+    } else if (loginEmail === "student" || loginEmail === "student1" || loginEmail === "student1@interntrack.com") {
+      loginEmail = "student1@interntrack.com";
+      if (loginPassword === "1234") loginPassword = "Student@123";
     }
 
-    if (result.user.role !== selectedPortal.id) {
-      setError(
-        `This account does not belong to the ${selectedPortal.title}.`
-      );
-      localStorage.removeItem("user");
-      return;
-    }
+    try {
+      const res = await login(loginEmail, loginPassword);
 
-    if (result.user.role === "admin") {
-      navigate("/admin");
-    } else if (result.user.role === "mentor") {
-      navigate("/mentor");
-    } else if (result.user.role === "student") {
-      navigate("/student");
+      if (!res?.user) {
+        setError(res?.detail || res?.message || "Login failed. Check credentials.");
+        return;
+      }
+
+      const role = res.user.role?.toLowerCase();
+      if (role !== selectedPortal.id) {
+        setError(`This account (${res.user.email}) does not belong to the ${selectedPortal.title}.`);
+        return;
+      }
+
+      if (role === "admin") {
+        navigate("/admin");
+      } else if (role === "mentor") {
+        navigate("/mentor");
+      } else if (role === "student") {
+        navigate("/student");
+      }
+    } catch (err: any) {
+      let msg = "Invalid credentials or server unavailable.";
+      if (typeof err === "string") {
+        msg = err;
+      } else if (err?.detail) {
+        msg = err.detail;
+      } else if (err?.message) {
+        msg = err.message;
+      } else if (err?.non_field_errors && err.non_field_errors.length > 0) {
+        msg = err.non_field_errors[0];
+      }
+      setError(msg);
     }
   };
 

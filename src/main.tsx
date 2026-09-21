@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App";
 import { AuthProvider } from "./context/AuthContext";
+import { WebSocketProvider } from "./context/WebSocketContext";
 import { ThemeProvider } from "./context/ThemeContext";
 
 const rootElement = document.getElementById("root");
@@ -11,7 +12,9 @@ if (rootElement) {
     <StrictMode>
       <ThemeProvider>
         <AuthProvider>
-          <App />
+          <WebSocketProvider>
+            <App />
+          </WebSocketProvider>
         </AuthProvider>
       </ThemeProvider>
     </StrictMode>

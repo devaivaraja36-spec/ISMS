@@ -1,114 +1,87 @@
-import { createContext, useContext, useState, ReactNode } from "react";
-import { UserRole } from "../types";
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { authApi } from '../api/auth';
 
-export interface AuthUser {
-  username: string;
-  password?: string;
-  role: UserRole;
-  name: string;
-  email?: string;
+interface User {
+  id: number;
+  email: string;
+  first_name: string;
+  last_name: string;
+  role: 'STUDENT' | 'MENTOR' | 'ADMIN';
   phone?: string;
-  department?: string;
-  bio?: string;
-}
-
-interface LoginResult {
-  success: boolean;
-  message?: string;
-  user?: AuthUser;
+  student_id?: number;
+  mentor_id?: number;
 }
 
 interface AuthContextType {
-  user: AuthUser | null;
-  login: (username: string, password: string) => LoginResult;
-  logout: () => void;
-  updateUser: (updatedData: Partial<AuthUser>) => void;
+  user: User | null;
+  token: string | null;
+  loading: boolean;
+  login: (email: string, pass: string) => Promise<any>;
+  logout: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType | null>(null);
+const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
-const users: AuthUser[] = [
-  {
-    username: "student1",
-    password: "1234",
-    role: "student",
-    name: "Arun Kumar",
-  },
-  {
-    username: "mentor1",
-    password: "1234",
-    role: "mentor",
-    name: "Dr. Priya Sharma",
-  },
-  {
-    username: "admin",
-    password: "1234",
-    role: "admin",
-    name: "System Administrator",
-  },
-];
-
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(() => {
-    const saved = localStorage.getItem("user");
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(() => {
+    const saved = localStorage.getItem('user');
     return saved ? JSON.parse(saved) : null;
   });
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem('access_token'));
+  const [loading, setLoading] = useState(true);
 
-  const login = (username: string, password: string): LoginResult => {
-    const foundUser = users.find(
-      (item) => item.username === username && item.password === password
-    );
+  useEffect(() => {
+    const initAuth = async () => {
+      const savedToken = localStorage.getItem('access_token');
+      if (savedToken) {
+        try {
+          const res = await authApi.getCurrentUser();
+          if (res?.success && res?.data) {
+            setUser(res.data);
+            localStorage.setItem('user', JSON.stringify(res.data));
+          }
+        } catch (err) {
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('refresh_token');
+          localStorage.removeItem('user');
+          setUser(null);
+          setToken(null);
+        }
+      }
+      setLoading(false);
+    };
+    initAuth();
+  }, []);
 
-    if (!foundUser) {
-      return {
-        success: false,
-        message: "Invalid username or password",
-      };
+  const login = async (email: string, pass: string) => {
+    const res = await authApi.login(email, pass);
+    if (res?.access && res?.user) {
+      setToken(res.access);
+      setUser(res.user);
     }
-
-    setUser(foundUser);
-    localStorage.setItem("user", JSON.stringify(foundUser));
-
-    return {
-      success: true,
-      user: foundUser,
-    };
+    return res;
   };
 
-  const updateUser = (updatedData: Partial<AuthUser>) => {
-    if (!user) return;
-    const updatedUser = {
-      ...user,
-      ...updatedData,
-    };
-
-    setUser(updatedUser);
-    localStorage.setItem("user", JSON.stringify(updatedUser));
-  };
-
-  const logout = () => {
+  const logout = async () => {
+    await authApi.logout();
     setUser(null);
-    localStorage.removeItem("user");
+    setToken(null);
+  };
+
+  const refreshUser = async () => {
+    const res = await authApi.getCurrentUser();
+    if (res?.success && res?.data) {
+      setUser(res.data);
+      localStorage.setItem('user', JSON.stringify(res.data));
+    }
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        login,
-        logout,
-        updateUser,
-      }}
-    >
+    <AuthContext.Provider value={{ user, token, loading, login, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );
-}
+};
 
-export function useAuth(): AuthContextType {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
-}
+export const useAuth = () => useContext(AuthContext);

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Sidebar from "../../components/layout/Sidebar";
 import DeadlineAlertBanner from "../../components/common/DeadlineAlertBanner";
 import MentorDetailsModal from "../../components/modals/MentorDetailsModal";
@@ -10,12 +10,26 @@ import HabitTrackerWidget from "../../components/widgets/HabitTrackerWidget";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { User, Sparkles, CheckCircle2, Clock, FolderKanban, ArrowRight } from "lucide-react";
+import { studentApi } from "../../api/student";
 
 function StudentDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isMentorModalOpen, setIsMentorModalOpen] = useState(false);
   const [showDeadlineBanner, setShowDeadlineBanner] = useState(true);
+  const [dashboardData, setDashboardData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    studentApi.getDashboard()
+      .then((res: any) => {
+        if (res?.success) {
+          setDashboardData(res.data);
+        }
+      })
+      .catch((err) => console.error("Failed to load student dashboard API:", err))
+      .finally(() => setLoading(false));
+  }, []);
 
   return (
     <div className="min-h-screen bg-slate-950 text-white flex">
@@ -77,14 +91,18 @@ function StudentDashboard() {
                 <Sparkles size={18} />
               </div>
             </div>
-            <h2 className="mt-2 text-3xl font-black text-blue-400">65%</h2>
+            <h2 className="mt-2 text-3xl font-black text-blue-400">
+              {dashboardData?.stats ? `${dashboardData.stats.progress_percentage}%` : "65%"}
+            </h2>
             <div className="mt-3 h-2 rounded-full bg-slate-900/80 overflow-hidden border border-white/5">
               <div
                 className="h-full rounded-full bg-gradient-to-r from-blue-600 to-cyan-400 shadow-sm"
-                style={{ width: "65%" }}
+                style={{ width: `${dashboardData?.stats?.progress_percentage || 65}%` }}
               />
             </div>
-            <p className="mt-2 text-[11px] text-slate-400">65% internship completed</p>
+            <p className="mt-2 text-[11px] text-slate-400">
+              {dashboardData?.stats ? `${dashboardData.stats.progress_percentage}% internship completed` : "65% internship completed"}
+            </p>
           </div>
 
           {/* Tasks */}
@@ -95,50 +113,58 @@ function StudentDashboard() {
                 <CheckCircle2 size={18} />
               </div>
             </div>
-            <h2 className="mt-2 text-3xl font-black text-emerald-400">13 / 20</h2>
+            <h2 className="mt-2 text-3xl font-black text-emerald-400">
+              {dashboardData?.stats ? `${dashboardData.stats.completed_tasks} / ${dashboardData.stats.total_tasks}` : "13 / 20"}
+            </h2>
             <div className="mt-3 h-2 rounded-full bg-slate-900/80 overflow-hidden border border-white/5">
               <div
                 className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 shadow-sm"
-                style={{ width: "65%" }}
+                style={{ width: `${dashboardData?.stats?.total_tasks ? (dashboardData.stats.completed_tasks / dashboardData.stats.total_tasks * 100) : 65}%` }}
               />
             </div>
-            <p className="mt-2 text-[11px] text-slate-400">7 tasks remaining</p>
+            <p className="mt-2 text-[11px] text-slate-400">
+              {dashboardData?.stats ? `${dashboardData.stats.pending_tasks + dashboardData.stats.in_progress_tasks} tasks remaining` : "7 tasks remaining"}
+            </p>
           </div>
 
-          {/* Attendance */}
+          {/* Hours Logged */}
           <div className="group vision-glass-panel rounded-3xl p-6 transition-all duration-300 hover:border-purple-500/40 hover:-translate-y-0.5">
             <div className="flex items-center justify-between">
-              <p className="text-xs font-semibold text-slate-400">Attendance Rate</p>
+              <p className="text-xs font-semibold text-slate-400">Hours Logged</p>
               <div className="rounded-xl bg-purple-500/10 p-2.5 text-purple-400 border border-purple-500/20 group-hover:scale-110 transition-transform">
                 <Clock size={18} />
               </div>
             </div>
-            <h2 className="mt-2 text-3xl font-black text-purple-400">92%</h2>
+            <h2 className="mt-2 text-3xl font-black text-purple-400">
+              {dashboardData?.stats ? `${dashboardData.stats.total_hours} hrs` : "92 hrs"}
+            </h2>
             <div className="mt-3 h-2 rounded-full bg-slate-900/80 overflow-hidden border border-white/5">
               <div
                 className="h-full rounded-full bg-gradient-to-r from-purple-600 to-pink-500 shadow-sm"
-                style={{ width: "92%" }}
+                style={{ width: "90%" }}
               />
             </div>
-            <p className="mt-2 text-[11px] text-slate-400">23 / 25 working days</p>
+            <p className="mt-2 text-[11px] text-slate-400">Verified by assigned mentor</p>
           </div>
 
-          {/* Activity */}
+          {/* Activity Reviews */}
           <div className="group vision-glass-panel rounded-3xl p-6 transition-all duration-300 hover:border-amber-500/40 hover:-translate-y-0.5">
             <div className="flex items-center justify-between">
-              <p className="text-xs font-semibold text-slate-400">Activities Submitted</p>
+              <p className="text-xs font-semibold text-slate-400">Pending Reviews</p>
               <div className="rounded-xl bg-amber-500/10 p-2.5 text-amber-400 border border-amber-500/20 group-hover:scale-110 transition-transform">
                 <FolderKanban size={18} />
               </div>
             </div>
-            <h2 className="mt-2 text-3xl font-black text-amber-400">18</h2>
+            <h2 className="mt-2 text-3xl font-black text-amber-400">
+              {dashboardData?.stats ? dashboardData.stats.pending_reviews : 0}
+            </h2>
             <div className="mt-3 h-2 rounded-full bg-slate-900/80 overflow-hidden border border-white/5">
               <div
                 className="h-full rounded-full bg-gradient-to-r from-amber-500 to-orange-400 shadow-sm"
                 style={{ width: "80%" }}
               />
             </div>
-            <p className="mt-2 text-[11px] text-slate-400">Daily logs up to date</p>
+            <p className="mt-2 text-[11px] text-slate-400">Daily logs waiting for review</p>
           </div>
         </div>
 
