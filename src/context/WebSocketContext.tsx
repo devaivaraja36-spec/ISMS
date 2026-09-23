@@ -36,7 +36,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     let reconnectTimeout: ReturnType<typeof setTimeout>;
 
     const connect = () => {
-      const wsUrl = `ws://127.0.0.1:8000/ws/notifications/?token=${token}`;
+      const wsUrl = `wss://intern-management-system2.onrender.com/ws/notifications/?token=${token}`;
       socket = new WebSocket(wsUrl);
 
       socket.onopen = () => {

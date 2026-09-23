@@ -1,11 +1,4 @@
 {
-<<<<<<< HEAD
-  "name": "isms-root",
-  "private": true,
-  "scripts": {
-    "dev": "npm run dev --prefix ISMS-main",
-    "build": "npm run build --prefix ISMS-main"
-=======
   "name": "internship-monitoring-system",
   "private": true,
   "version": "0.0.0",
@@ -36,6 +29,5 @@
     "oxlint": "^1.81.0",
     "typescript": "^7.0.2",
     "vite": "^8.3.0"
->>>>>>> 0273b37ba64c2ff2698ab7e6991fd5daa9cb2980
   }
 }
